@@ -17,6 +17,10 @@ that re-encodes with a different colour matrix and skin tones shift.
 (on Windows `%USERPROFILE%\.reels-captions\engine`; or `$REELS_HOME/engine` if that env var is set).
 All scripts are plain Node — run them with `node`, the same way on macOS, Windows and Linux.
 
+**Talk to the user in their language.** Reply in the language the user writes to you in (usually
+Russian), even though this file is in English: progress lines, questions, errors, the final summary.
+Commands, paths and JSON keys stay as they are.
+
 ## 0. Setup (first time, or when `doctor` says NOT READY)
 
 ```

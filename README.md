@@ -25,7 +25,14 @@
 
 ## For AI agents: how to install
 
-The user pasted this link and asked you to install the skill. Do this:
+The user pasted this link and asked you to install the skill.
+
+**Talk to the user in the language they wrote to you in.** Most users write in Russian
+(«поставь скилл …») — then every message you send them is in Russian: progress lines, questions,
+errors, the final "ready" message. This README being partly in English does not change that.
+Commands and file paths stay as they are.
+
+Do this:
 
 1. Preferred: `npx -y skills add quibex/reels-captions` (installs into the user's agent skills folder).
 2. If that fails, clone the repo into the skills folder directly:
