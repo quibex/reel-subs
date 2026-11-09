@@ -269,3 +269,64 @@ export const readEdit = (p) => {
 };
 export const workDirFor = (edit, editPath) => path.dirname(path.resolve(editPath));
 export const parseTimes = (s) => String(s).split(",").map((x) => Number(x.trim())).filter((x) => Number.isFinite(x));
+
+/* ---------------------------------------------------------------- speech engine */
+// Two builds of sherpa-onnx with one interface:
+//  - native (sherpa-onnx-node): fast, multi-threaded. Default.
+//  - WASM (sherpa-onnx): single thread, ~3–5× slower, but it is plain JS + .wasm, so nothing
+//    can block it. Used automatically when the native addon can't load — e.g. Windows
+//    Smart App Control or an antivirus blocks its unsigned .node/.dll.
+// Force one with REELS_ASR=native|wasm (or prepare.mjs --asr native|wasm).
+export const loadAsr = (force = process.env.REELS_ASR) => {
+  let nativeError;
+  if (force !== "wasm") {
+    try {
+      const s = req("sherpa-onnx-node");
+      return {
+        kind: "native",
+        version: s.version,
+        threads: 4,
+        readWave: (f) => s.readWave(f),
+        vad: (cfg, bufferSec) => {
+          const v = new s.Vad(cfg, bufferSec);
+          return { accept: (x) => v.acceptWaveform(x), isEmpty: () => v.isEmpty(), front: () => v.front(false), pop: () => v.pop(), flush: () => v.flush() };
+        },
+        recognizer: (cfg) => {
+          const r = new s.OfflineRecognizer(cfg);
+          return (samples, sampleRate) => {
+            const st = r.createStream();
+            st.acceptWaveform({ samples, sampleRate });
+            r.decode(st);
+            return r.getResult(st);
+          };
+        },
+      };
+    } catch (e) {
+      if (force === "native") throw e;
+      nativeError = e;
+    }
+  }
+  const s = req("sherpa-onnx");
+  return {
+    kind: "wasm",
+    version: req("sherpa-onnx/package.json").version,
+    threads: 1,
+    nativeError,
+    readWave: (f) => s.readWave(f),
+    vad: (cfg, bufferSec) => {
+      const v = s.createVad({ ...cfg, bufferSizeInSeconds: bufferSec });
+      return { accept: (x) => v.acceptWaveform(x), isEmpty: () => v.isEmpty(), front: () => v.front(), pop: () => v.pop(), flush: () => v.flush() };
+    },
+    recognizer: (cfg) => {
+      const r = s.createOfflineRecognizer(cfg);
+      return (samples, sampleRate) => {
+        const st = r.createStream();
+        st.acceptWaveform(sampleRate, samples);
+        r.decode(st);
+        const res = r.getResult(st);
+        st.free();
+        return res;
+      };
+    },
+  };
+};

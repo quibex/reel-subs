@@ -158,4 +158,8 @@ How:
 - Variable frame rate warning → ask the user to export at constant 30 or 60 fps.
 - Not 9:16 → graphics are laid out for vertical video; they're scaled to fit, but say so.
 - Windows: use the same commands; quote paths with spaces. PowerShell and cmd both work.
+- Native speech engine blocked (Windows Smart App Control, antivirus): nothing to do — `prepare.mjs`
+  switches to the WASM build by itself and says so. It is single-threaded, ~5× slower (still well under
+  a minute per minute of video), and the words are nearly identical. Don't ask the user to turn
+  Smart App Control off. Force a build with `--asr native|wasm` or `REELS_ASR=native|wasm`.
 - Nothing is uploaded anywhere: models and Chrome are downloaded once, then it all runs offline.

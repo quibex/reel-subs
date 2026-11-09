@@ -1,4 +1,4 @@
-// prepare.mjs <video> [--lang ru|multi] [--audio clean.wav] [--work dir] [--force]
+// prepare.mjs <video> [--lang ru|multi] [--audio clean.wav] [--work dir] [--force] [--asr native|wasm]
 //
 // 1. probes the video (size, fps, colour tags, HDR check)
 // 2. extracts 16 kHz mono speech and recognises it LOCALLY (sherpa-onnx; nothing leaves the computer)
@@ -8,7 +8,7 @@
 //      edit.json        draft: auto caption pages, no graphics yet (not overwritten unless --force)
 import fs from "node:fs";
 import path from "node:path";
-import { MODELS, MODEL_DEFS, abs, die, ensureModel, ffmpeg, log, parseArgs, probe, req } from "./lib.mjs";
+import { MODELS, MODEL_DEFS, abs, die, ensureModel, ffmpeg, loadAsr, log, parseArgs, probe } from "./lib.mjs";
 
 const { pos, opt } = parseArgs();
 const video = pos[0];
@@ -46,10 +46,16 @@ log("extracting audio…");
 ffmpeg(["-i", audioSrc, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav]);
 
 /* ---------------------------------------------------------------- ASR */
-const sherpa = req("sherpa-onnx-node");
-const w = sherpa.readWave(wav);
+const asr = loadAsr(opt.asr);
+if (asr.kind === "wasm") {
+  log(asr.nativeError
+    ? `native speech engine could not load (${String(asr.nativeError.message).split("\n")[0]}) — using the WASM build: almost the same words, ~5× slower (one thread).`
+    : "using the WASM speech engine (forced): almost the same words, ~5× slower (one thread).");
+}
+const t0 = Date.now();
+const w = asr.readWave(wav);
 const SR = w.sampleRate;
-const vad = new sherpa.Vad(
+const vad = asr.vad(
   {
     sileroVad: {
       model: path.join(MODELS, MODEL_DEFS.vad.file),
@@ -62,26 +68,26 @@ const vad = new sherpa.Vad(
 const segs = [];
 const drain = () => {
   while (!vad.isEmpty()) {
-    const s = vad.front(false);
+    const s = vad.front();
     segs.push({ start: s.start / SR, samples: Float32Array.from(s.samples) });
     vad.pop();
   }
 };
 for (let i = 0; i < w.samples.length; i += 512) {
-  vad.acceptWaveform(w.samples.subarray(i, i + 512));
+  vad.accept(w.samples.subarray(i, i + 512));
   drain();
 }
 vad.flush();
 drain();
 log(`speech segments: ${segs.length}`);
 
-const rec = new sherpa.OfflineRecognizer({
+const recognize = asr.recognizer({
   featConfig: { sampleRate: 16000, featureDim: lang === "ru" ? 64 : 128 },
   modelConfig: {
     transducer: { encoder: path.join(mdir, M.files.encoder), decoder: path.join(mdir, M.files.decoder), joiner: path.join(mdir, M.files.joiner) },
     tokens: path.join(mdir, M.files.tokens),
     modelType: "nemo_transducer",
-    numThreads: 4,
+    numThreads: asr.threads,
     debug: false,
   },
   decodingMethod: "greedy_search",
@@ -90,10 +96,7 @@ const rec = new sherpa.OfflineRecognizer({
 const words = [];
 const lines = [];
 for (const seg of segs) {
-  const st = rec.createStream();
-  st.acceptWaveform({ samples: seg.samples, sampleRate: SR });
-  rec.decode(st);
-  const r = rec.getResult(st);
+  const r = recognize(seg.samples, SR);
   const text = (r.text || "").trim();
   if (!text) continue;
   const segEnd = seg.start + seg.samples.length / SR;
@@ -124,6 +127,7 @@ for (let i = 0; i < words.length; i++) {
   delete wd.last;
   delete wd.segEnd;
 }
+log(`speech recognised in ${((Date.now() - t0) / 1000).toFixed(1)} s (${asr.kind} engine)`);
 if (!words.length) log("warning: no speech recognised — check the language (--lang) or the audio.");
 
 /* ---------------------------------------------------------------- caption pages */

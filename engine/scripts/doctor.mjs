@@ -1,7 +1,7 @@
 // doctor.mjs [--fix] [--lang ru|multi]
 // Checks everything the pipeline needs. With --fix it downloads what's missing
 // (speech models, headless Chrome for Remotion). Prints READY when all is good.
-import { HOME, MODELS, browserExecutable, ensureModel, ffmpegBin, ffprobeBin, log, modelReady, parseArgs, req, run, saveBrowser, systemChromeCandidates } from "./lib.mjs";
+import { HOME, MODELS, browserExecutable, ensureModel, ffmpegBin, ffprobeBin, loadAsr, log, modelReady, parseArgs, req, run, saveBrowser, systemChromeCandidates } from "./lib.mjs";
 
 const { opt } = parseArgs();
 const lang = opt.lang === "multi" || opt.lang === "en" ? "multi" : "ru";
@@ -23,7 +23,13 @@ check("Node.js ≥ 18", () => {
 });
 check("ffmpeg", () => run(ffmpegBin(), ["-version"]).stdout.split("\n")[0]);
 check("ffprobe", () => run(ffprobeBin(), ["-version"]).stdout.split("\n")[0]);
-check("speech engine (sherpa-onnx)", () => `v${req("sherpa-onnx-node").version}`);
+check("speech engine (sherpa-onnx)", () => {
+  const a = loadAsr();
+  if (a.kind === "native") return `v${a.version}`;
+  if (!a.nativeError) return `v${a.version}, WASM build (forced with REELS_ASR=wasm)`;
+  return `v${a.version}, WASM build (slower, one thread) — the native one could not load: ` +
+    String(a.nativeError.message).split("\n")[0];
+});
 check("Remotion", () => `v${req("remotion/package.json").version}`);
 
 if (opt.fix) {
