@@ -21,6 +21,10 @@ All scripts are plain Node — run them with `node`, the same way on macOS, Wind
 Russian), even though this file is in English: progress lines, questions, errors, the final summary.
 Commands, paths and JSON keys stay as they are.
 
+**Read the user's preferences first.** If `~/.reels-captions/preferences.md` exists (or
+`$REELS_HOME/preferences.md`), read it before step 1 and follow it: it holds what this user asked for in
+earlier sessions and it overrides the defaults in this file. See "Learning the user's taste" below.
+
 ## 0. Setup (first time, or when `doctor` says NOT READY)
 
 ```
@@ -113,6 +117,32 @@ Then give the user: the output path, a 2–3 line summary of what you added, dou
 
 Edit `edit.json` → preview the changed moments → render again. Never re-run `prepare.mjs --force`
 after the user approved captions (it would reset them). Copy `edit.json` before big changes.
+
+## Learning the user's taste
+
+The skill should get better for this user every time. Their notes live in
+`~/.reels-captions/preferences.md` (`$REELS_HOME/preferences.md` if set) — outside the skill folder and
+outside `ENGINE`, so updating the skill or re-running setup never wipes them.
+
+When to offer saving:
+- The user corrects the same kind of thing twice (font, colours, caption size or position, how much
+  graphics, hook wording, which words get the accent…).
+- The user says something like «запомни», «в следующий раз делай так», «мне так больше нравится».
+- At the end of a session with revisions: list the corrections in 2–4 short lines and ask once
+  whether to save them for next time.
+
+How:
+- Always ask first, show exactly what you will write, write only after a yes. Never save on your own.
+- Write rules, not history: «Шрифт подписей крупнее: captionSize 60», «Хук без эмодзи»,
+  «Не больше одной плашки на 10 с». Group them under short headings (Style, Captions, Graphics,
+  Wording). Update or remove an old rule instead of adding a contradicting one.
+- Style values that `edit.json` → `style` supports go in as exact values, so you can copy them into
+  every new `edit.json`.
+- If a wish needs a code change (a new font, a new animation, a different card look), make it in
+  `ENGINE/src/` and also record it under **Engine changes** in `preferences.md`: which file, what
+  changed, why. Setup copies the engine again and overwrites edited files (new files survive), so
+  after any setup run check this list and re-apply what is missing.
+- The user can also edit `preferences.md` by hand or just tell you what to change in it.
 
 ## Customising
 
