@@ -1,0 +1,4 @@
+node_modules/
+.bundle/
+*.reels/
+.DS_Store
