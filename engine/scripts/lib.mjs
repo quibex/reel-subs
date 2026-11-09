@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 export const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-export const HOME = process.env.REELS_HOME || path.join(os.homedir(), ".reels-captions");
+export const HOME = process.env.REELS_HOME || path.join(os.homedir(), ".reel-subs");
 export const MODELS = path.join(HOME, "models");
 export const req = createRequire(path.join(ENGINE, "package.json"));
 export const IS_WIN = process.platform === "win32";
@@ -212,7 +212,7 @@ export const ensureModel = async (key) => {
 
 /* ------------------------------------------------------------------ remotion */
 // Remotion downloads its own Chrome Headless Shell. If that is blocked, we fall back to an
-// installed Chrome/Chromium (saved by doctor.mjs into ~/.reels-captions/browser.txt) or $REELS_BROWSER.
+// installed Chrome/Chromium (saved by doctor.mjs into ~/.reel-subs/browser.txt) or $REELS_BROWSER.
 const BROWSER_FILE = path.join(HOME, "browser.txt");
 export const browserExecutable = () => {
   if (process.env.REELS_BROWSER) return process.env.REELS_BROWSER;

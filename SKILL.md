@@ -1,9 +1,9 @@
 ---
-name: reels-captions
+name: reel-subs
 description: Add subtitles and motion graphics (hook, info cards, big numbers, terminal, punchlines, HUD widgets) to a vertical talking-head video for Reels / Shorts / TikTok — fully on the user's computer, no cloud. Local speech recognition (Russian, English and 24 more languages), graphics written as code with Remotion, colour-safe compositing with ffmpeg. Use when the user asks to add captions/subtitles/animations/plates/text to their reel or short video. Not for generating video from scratch.
 ---
 
-# Reels captions & animations
+# reel-subs — subtitles & animations for reels
 
 You turn a finished talking-head cut (exported from CapCut / Premiere / phone) into a reel with
 phrase-by-phrase captions and clean motion graphics. Everything runs locally on the user's machine.
@@ -13,15 +13,15 @@ phrase-by-phrase captions and clean motion graphics. Everything runs locally on 
 the untouched source with the source's own colour tags. Never render the whole video through Remotion:
 that re-encodes with a different colour matrix and skin tones shift.
 
-`SKILL_DIR` below = the folder containing this file. `ENGINE` = `~/.reels-captions/engine`
-(on Windows `%USERPROFILE%\.reels-captions\engine`; or `$REELS_HOME/engine` if that env var is set).
+`SKILL_DIR` below = the folder containing this file. `ENGINE` = `~/.reel-subs/engine`
+(on Windows `%USERPROFILE%\.reel-subs\engine`; or `$REELS_HOME/engine` if that env var is set).
 All scripts are plain Node — run them with `node`, the same way on macOS, Windows and Linux.
 
 **Talk to the user in their language.** Reply in the language the user writes to you in (usually
 Russian), even though this file is in English: progress lines, questions, errors, the final summary.
 Commands, paths and JSON keys stay as they are.
 
-**Read the user's preferences first.** If `~/.reels-captions/preferences.md` exists (or
+**Read the user's preferences first.** If `~/.reel-subs/preferences.md` exists (or
 `$REELS_HOME/preferences.md`), read it before step 1 and follow it: it holds what this user asked for in
 earlier sessions and it overrides the defaults in this file. See "Learning the user's taste" below.
 
@@ -121,7 +121,7 @@ after the user approved captions (it would reset them). Copy `edit.json` before 
 ## Learning the user's taste
 
 The skill should get better for this user every time. Their notes live in
-`~/.reels-captions/preferences.md` (`$REELS_HOME/preferences.md` if set) — outside the skill folder and
+`~/.reel-subs/preferences.md` (`$REELS_HOME/preferences.md` if set) — outside the skill folder and
 outside `ENGINE`, so updating the skill or re-running setup never wipes them.
 
 When to offer saving:

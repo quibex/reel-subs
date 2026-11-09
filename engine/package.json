@@ -1,9 +1,9 @@
 {
-  "name": "reels-captions-engine",
+  "name": "reel-subs-engine",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Engine for the reels-captions agent skill: local speech recognition, Remotion overlay, color-safe compositing.",
+  "description": "Engine for the reel-subs agent skill: local speech recognition, Remotion overlay, color-safe compositing.",
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit"

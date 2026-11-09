@@ -2,7 +2,7 @@
 // setup.mjs [--lang ru|multi] [--check]
 //
 // One-time install (safe to re-run any time — it only does what's missing):
-//   1. copies the engine to ~/.reels-captions/engine (or $REELS_HOME/engine)
+//   1. copies the engine to ~/.reel-subs/engine (or $REELS_HOME/engine)
 //   2. npm install there: Remotion, React, fonts, ffmpeg/ffprobe binaries, sherpa-onnx (speech recognition)
 //   3. downloads the speech model and headless Chrome, then runs the doctor
 // Needs only Node.js 18+. Works the same on macOS, Windows and Linux.
@@ -25,7 +25,7 @@ if (maj < 18) {
 }
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const HOME = process.env.REELS_HOME || path.join(os.homedir(), ".reels-captions");
+const HOME = process.env.REELS_HOME || path.join(os.homedir(), ".reel-subs");
 const DEST = path.join(HOME, "engine");
 const node = process.execPath;
 const doctor = () => spawnSync(node, [path.join(DEST, "scripts", "doctor.mjs"), "--fix", "--lang", lang], { stdio: "inherit" }).status;
